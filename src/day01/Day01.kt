@@ -5,16 +5,13 @@ import readInput
 
 fun main() {
     fun part1(input: List<String>): Int =
-        input.asInts().zipWithNext()
-            .map { it.second - it.first }
+        input.asInts()
+            .zipWithNext { a, b -> b - a }
             .count { it > 0 }
 
     fun part2(input: List<String>): Int =
-        input.asInts().zipWithNext()
-            .zipWithNext { it, next -> Triple(it.first, it.second, next.second) }
-            .also { println(it) }
-            .map { it.toList().sum() }.zipWithNext()
-            .map { it.second - it.first }
+        input.asInts().windowed(3) { it.sum() }
+            .zipWithNext { a, b -> b - a }
             .count { it > 0 }
 
     // test if implementation meets criteria from the description, like:

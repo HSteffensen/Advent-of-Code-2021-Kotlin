@@ -25,7 +25,6 @@ fun main() {
             .reduce { left, right -> Triple(left.first + right.first, left.second + (right.first * left.third), left.third + right.third) }
             .run { first * second }
 
-    // test if implementation meets criteria from the description, like:
     val testInput = readInput("day02/Day02_test")
     check(part1(testInput) == 150)
     check(part2(testInput) == 900)
