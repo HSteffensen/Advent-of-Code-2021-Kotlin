@@ -10,8 +10,8 @@ fun main() {
             .count { it > 0 }
 
     fun part2(input: List<String>): Int =
-        input.asInts()
-            .zip(input.slice(1 until input.size).asInts().zipWithNext()) { a, b -> Triple(a, b.first, b.second) }
+        input.asInts().zipWithNext()
+            .zipWithNext { it, next -> Triple(it.first, it.second, next.second) }
             .also { println(it) }
             .map { it.toList().sum() }.zipWithNext()
             .map { it.second - it.first }
