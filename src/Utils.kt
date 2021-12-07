@@ -6,18 +6,22 @@ import java.security.MessageDigest
  * Reads lines from the given input txt file.
  */
 fun readInput(name: String) = File("src", "$name.txt").readLines()
+
+fun commaSeparatedInts(input: List<String>, delimiter: String = ","): List<Int> =
+    input.first().split(delimiter).asInts()
+
 fun List<String>.asInts(): List<Int> {
     return map { it.toInt() }
 }
-inline fun <reified T> finalAnswerIsNotWrong(answer: T, wrongAnswers: List<T>): T {
-    return answer
+
+inline fun <reified T> finalAnswerIsNotWrong(answer: T, wrongAnswers: List<T>): T =
+    answer
         .also {
             check(!wrongAnswers.contains(it)) { "Wrong answer for part 1: $answer" }
         }
-}
-inline fun <reified T> testAnswer(answer: T, expectedAnswer: T) {
+
+inline fun <reified T> testAnswer(answer: T, expectedAnswer: T) =
     check(answer == expectedAnswer) { "wrong test. expected: $expectedAnswer, got: $answer" }
-}
 
 /**
  * Converts string to md5 hash.
