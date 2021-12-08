@@ -8,7 +8,7 @@ import java.security.MessageDigest
 fun readInput(name: String) = File("src", "$name.txt").readLines()
 
 fun commaSeparatedInts(input: List<String>, delimiter: String = ","): List<Int> =
-    input.first().split(delimiter).asInts()
+    input.single().split(delimiter).asInts()
 
 fun List<String>.asInts(): List<Int> {
     return map { it.toInt() }
