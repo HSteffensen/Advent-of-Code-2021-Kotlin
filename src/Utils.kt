@@ -42,17 +42,37 @@ class SquareGrid<T> {
         return grid[Pair(x, y)]
     }
 
+    fun containsKey(position: Pair<Int, Int>): Boolean {
+        return grid.containsKey(position)
+    }
+
     fun toList() = grid.toList()
+
+    fun map(transform: (T) -> T): SquareGrid<T> {
+        val newGrid = SquareGrid<T>()
+        grid.forEach { (position, value) ->
+            newGrid[position] = transform(value)
+        }
+        return newGrid
+    }
 
     companion object {
         inline fun <reified T> fromListOfLists(incoming: List<List<T>>): SquareGrid<T> {
-            val grid = SquareGrid<T>()
+            val squareGrid = SquareGrid<T>()
             incoming.forEachIndexed { y, row ->
                 row.forEachIndexed { x, value ->
-                    grid[x, y] = value
+                    squareGrid[x, y] = value
                 }
             }
-            return grid
+            return squareGrid
+        }
+
+        inline fun <reified T> fromListOfPairs(incoming: List<Pair<Pair<Int, Int>, T>>): SquareGrid<T> {
+            val squareGrid = SquareGrid<T>()
+            incoming.forEach { (position, value) ->
+                squareGrid[position] = value
+            }
+            return squareGrid
         }
     }
 }
