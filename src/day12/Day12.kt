@@ -45,25 +45,34 @@ tailrec fun allPathsThroughCaves(
             nextCaveCriterion
         )
 
+fun countPathsThroughCaves(
+    caveMap: CaveMap,
+    path: List<String>,
+    nextCaveCriterion: (String, List<String>) -> Boolean,
+): Int =
+    if (path.last() == "end")
+        1
+    else
+        caveMap[path.last()]!!.filter { nextCaveCriterion(it, path) }
+            .sumOf { countPathsThroughCaves(caveMap, path + it, nextCaveCriterion) }
+
 fun main() {
     fun part1(input: List<String>): Int =
-        allPathsThroughCaves(
+        countPathsThroughCaves(
             buildCaveMap(inputAsPairs(input)),
-            listOf(listOf("start")),
-            listOf()
-        ) { caveName, path -> caveName.isUpperCase() || !path.contains(caveName) }.size
+            listOf("start"),
+        ) { caveName, path -> caveName.isUpperCase() || !path.contains(caveName) }
 
     fun part2(input: List<String>): Int =
-        allPathsThroughCaves(
+        countPathsThroughCaves(
             buildCaveMap(inputAsPairs(input)),
-            listOf(listOf("start")),
-            listOf()
+            listOf("start"),
         ) { caveName, path ->
             caveName != "start"
                     && (caveName.isUpperCase()
                     || !path.contains(caveName)
                     || path.groupingBy { it }.eachCount().none { !it.key.isUpperCase() && it.value >= 2 })
-        }.size
+        }
 
     val testInput1 = readInput("day12/Day12_test1")
     val testInput2 = readInput("day12/Day12_test2")
