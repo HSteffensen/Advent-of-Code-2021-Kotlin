@@ -20,28 +20,32 @@ fun buildCaveMap(pairs: List<Pair<String, String>>): CaveMap =
 
 tailrec fun allPathsThroughCaves(
     caveMap: CaveMap,
-    pathQueue: List<List<String>>,
-    allPaths: List<List<String>>,
+    pathQueue: MutableList<List<String>>,
+    pathCount: Int,
     nextCaveCriterion: (String, List<String>) -> Boolean,
-): List<List<String>> =
+): Int =
     if (pathQueue.isEmpty())
-        allPaths
+        pathCount
     else if (pathQueue.first().last() == "end")
-        allPathsThroughCaves(caveMap,
-            pathQueue.drop(1),
-            allPaths + listOf(pathQueue.first()),
+        allPathsThroughCaves(
+            caveMap,
+            pathQueue.apply { removeFirst() },
+            pathCount + 1,
             nextCaveCriterion
         )
     else
-        allPathsThroughCaves(caveMap,
-            pathQueue.drop(1) +
-                    caveMap[pathQueue.first().last()]!!.mapNotNull {
-                        if (nextCaveCriterion(it, pathQueue.first()))
-                            pathQueue.first() + it
-                        else
-                            null
-                    },
-            allPaths,
+        allPathsThroughCaves(
+            caveMap,
+            pathQueue.apply {
+                addAll(caveMap[pathQueue.first().last()]!!.mapNotNull {
+                    if (nextCaveCriterion(it, pathQueue.first()))
+                        pathQueue.first() + it
+                    else
+                        null
+                })
+                removeFirst()
+            },
+            pathCount,
             nextCaveCriterion
         )
 
@@ -58,12 +62,31 @@ fun countPathsThroughCaves(
 
 fun main() {
     fun part1(input: List<String>): Int =
+        allPathsThroughCaves(
+            buildCaveMap(inputAsPairs(input)),
+            mutableListOf(listOf("start")),
+            0
+        ) { caveName, path -> caveName.isUpperCase() || !path.contains(caveName) }
+
+    fun part2(input: List<String>): Int =
+        allPathsThroughCaves(
+            buildCaveMap(inputAsPairs(input)),
+            mutableListOf(listOf("start")),
+            0
+        ) { caveName, path ->
+            caveName != "start"
+                    && (caveName.isUpperCase()
+                    || !path.contains(caveName)
+                    || path.groupingBy { it }.eachCount().none { !it.key.isUpperCase() && it.value >= 2 })
+        }
+
+    fun part1better(input: List<String>): Int =
         countPathsThroughCaves(
             buildCaveMap(inputAsPairs(input)),
             listOf("start"),
         ) { caveName, path -> caveName.isUpperCase() || !path.contains(caveName) }
 
-    fun part2(input: List<String>): Int =
+    fun part2better(input: List<String>): Int =
         countPathsThroughCaves(
             buildCaveMap(inputAsPairs(input)),
             listOf("start"),
@@ -80,19 +103,33 @@ fun main() {
     testAnswer(part1(testInput1), 10)
     testAnswer(part1(testInput2), 19)
     testAnswer(part1(testInput3), 226)
+    testAnswer(part1better(testInput1), 10)
+    testAnswer(part1better(testInput2), 19)
+    testAnswer(part1better(testInput3), 226)
     testAnswer(part2(testInput1), 36)
     testAnswer(part2(testInput2), 103)
     testAnswer(part2(testInput3), 3509)
+    testAnswer(part2better(testInput1), 36)
+    testAnswer(part2better(testInput2), 103)
+    testAnswer(part2better(testInput3), 3509)
 
     val input = readInput("day12/Day12")
     val wrongPart1Answers = listOf<Int>(
     )
     measureTimeMillis {
-        println("Part 1: ${finalAnswerIsNotWrong(part1(input), wrongPart1Answers)}")
+        println("Part 1: ${finalAnswerIsNotWrong(part1better(input), wrongPart1Answers)}")
     }.also { println("\ttook $it milliseconds") }
 
     val wrongPart2Answers = listOf<Int>(
     )
+    measureTimeMillis {
+        println("Part 2: ${finalAnswerIsNotWrong(part2better(input), wrongPart2Answers)}")
+    }.also { println("\ttook $it milliseconds") }
+
+    measureTimeMillis {
+        println("Part 1: ${finalAnswerIsNotWrong(part1(input), wrongPart1Answers)}")
+    }.also { println("\ttook $it milliseconds") }
+
     measureTimeMillis {
         println("Part 2: ${finalAnswerIsNotWrong(part2(input), wrongPart2Answers)}")
     }.also { println("\ttook $it milliseconds") }
