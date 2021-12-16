@@ -19,7 +19,7 @@ inline fun <reified T> T.println() = println(this)
 inline fun <reified T> finalAnswerIsNotWrong(answer: T, wrongAnswers: List<T>): T =
     answer
         .also {
-            check(!wrongAnswers.contains(it)) { "Wrong answer for part 1: $answer" }
+            check(!wrongAnswers.contains(it)) { "Wrong answer: $answer" }
         }
 
 inline fun <reified T> testAnswer(answer: T, expectedAnswer: T) =
