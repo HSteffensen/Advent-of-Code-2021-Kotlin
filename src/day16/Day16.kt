@@ -138,40 +138,28 @@ fun parsePacketBits(
     previousPackets: List<BitsPacket> = listOf(),
     limit: Int? = null,
     depth: Int = 0,
-    doPrint: Boolean = false
 ): Pair<List<BitsPacket>, String> =
     if (isTrailingZeroes(bits) || limit == 0)
         Pair(
             previousPackets,
             bits
-        ).also {
-            if (doPrint) println(
-                "${depthIndent(depth)}returning with ${bits.length} remaining bits which ${
-                    if (isTrailingZeroes(
-                            bits
-                        )
-                    ) "ARE" else "are NOT"
-                } all zeroes"
-            )
-        }
+        )
     else if (packetTypeId(bits) == 4)
         parsePacketBits(
             bits.substring(indexAfterFirstPacket(bits)),
-            previousPackets + BitsLiteralPacket(firstPacketBits(bits)).also { if (doPrint) println("${depthIndent(depth)}$it") },
+            previousPackets + BitsLiteralPacket(firstPacketBits(bits)),
             limit?.minus(1),
             depth,
-            doPrint
         )
     else
         BitsOperatorPacket(firstPacketBits(bits))
             .let { operatorPacketWithoutSubpackets ->
-                if (operatorPacketWithoutSubpackets.also { if (doPrint) println("${depthIndent(depth)}$it ${it.lengthType} ${it.length}") }.lengthType == BitsOperatorPacket.LengthType.TOTAL_BITS)
+                if (operatorPacketWithoutSubpackets.lengthType == BitsOperatorPacket.LengthType.TOTAL_BITS)
                     BitsOperatorPacket(
                         firstPacketBits(bits),
                         parsePacketBits(
                             bits.substring(indexAfterFirstPacket(bits) until indexAfterFirstPacket(bits) + operatorPacketWithoutSubpackets.length),
                             depth = depth + 1,
-                            doPrint = doPrint
                         ).first
                     ) to bits.substring(indexAfterFirstPacket(bits) + operatorPacketWithoutSubpackets.length)
                 else
@@ -180,7 +168,6 @@ fun parsePacketBits(
                         listOf(),
                         operatorPacketWithoutSubpackets.length,
                         depth + 1,
-                        doPrint
                     ).let { (packets, remainingBits) ->
                         BitsOperatorPacket(firstPacketBits(bits), packets) to remainingBits
                     }
@@ -191,7 +178,6 @@ fun parsePacketBits(
                     previousPackets + operatorPacketWithSubpackets,
                     limit?.minus(1),
                     depth,
-                    doPrint
                 )
             }
 
