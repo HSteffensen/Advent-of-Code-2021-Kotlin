@@ -14,8 +14,6 @@ fun List<String>.asInts(): List<Int> {
     return map { it.toInt() }
 }
 
-inline fun <reified T> T.println() = println(this)
-
 inline fun <reified T> finalAnswerIsNotWrong(answer: T, wrongAnswers: List<T>): T =
     answer
         .also {
