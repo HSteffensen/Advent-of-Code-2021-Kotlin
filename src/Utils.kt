@@ -1,6 +1,6 @@
 import java.io.File
-import java.math.BigInteger
-import java.security.MessageDigest
+import kotlin.math.max
+import kotlin.math.min
 
 /**
  * Reads lines from the given input txt file.
@@ -77,7 +77,15 @@ class SquareGrid<T> {
     }
 }
 
-/**
- * Converts string to md5 hash.
- */
-fun String.md5(): String = BigInteger(1, MessageDigest.getInstance("MD5").digest(toByteArray())).toString(16)
+
+fun overlap(aStart: Int, aEnd: Int, bStart: Int, bEnd: Int): Boolean =
+    aStart <= bEnd && aEnd >= bStart
+
+fun overlapAt(aStart: Int, aEnd: Int, bStart: Int, bEnd: Int): Pair<Int, Int>? =
+    if (overlap(aStart, aEnd, bStart, bEnd))
+        Pair(max(aStart, bStart), min(aEnd, bEnd))
+    else
+        null
+
+fun overlapSize(aStart: Int, aEnd: Int, bStart: Int, bEnd: Int): Int =
+    overlapAt(aStart, aEnd, bStart, bEnd)?.let { (a, b) -> b - a + 1 } ?: 0
