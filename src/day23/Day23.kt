@@ -111,8 +111,8 @@ data class GameState(val bugs: Map<Position, AmphipodColor>, val totalCost: Int,
         position.locationType == bugType.destination
 
     private fun isBugLowestRoomPosition(position: Position, bugType: AmphipodColor): Boolean =
-        position.locationType == bugType.destination
-                && position.neighbors.filter { !bugs.containsKey(it) }.size <= 1
+        bugIsAtDestination(position, bugType)
+                && position.neighbors.count { !bugs.containsKey(it) } <= 1
                 && roomHasNoIntruders(bugType.destination)
 
     private fun bugCanMoveTo(
@@ -136,7 +136,11 @@ data class GameState(val bugs: Map<Position, AmphipodColor>, val totalCost: Int,
             if (!bugs.containsKey(currentPosition)) {
                 add(currentPosition)
                 currentPosition.neighbors.filter { !visited.contains(it) }.forEach {
-                    reachablePositionsHelper(it, visited.apply { add(currentPosition) }, resultList)
+                    reachablePositionsHelper(
+                        it,
+                        visited.apply { add(currentPosition) },
+                        resultList
+                    )
                 }
             }
         }
@@ -179,21 +183,26 @@ data class GameState(val bugs: Map<Position, AmphipodColor>, val totalCost: Int,
 
 tailrec fun findLowestEnergySolution(
     queue: PriorityQueue<GameState>,
-    seen: MutableSet<GameState> = mutableSetOf()
+    seen: MutableSet<GameState> = mutableSetOf(),
+    countVisited: Int = 0
 ): Int =
     if (queue.isEmpty())
         throw IllegalStateException("Failed to solve")
     else if (queue.peek().isSolved)
-        queue.peek().totalCost
+        queue.peek().totalCost.also { println("Visited $countVisited states") }
     else
         findLowestEnergySolution(
             queue.apply {
-                poll().nextStates().filter { !seen.contains(it) }.let { nextStates ->
+                poll()
+                    .nextStates()
+                    .filter { !seen.contains(it) }
+                    .let { nextStates ->
                     seen.addAll(nextStates)
                     queue.addAll(nextStates)
                 }
             },
-            seen
+            seen,
+            countVisited + 1
         )
 
 fun findLowestEnergySolution(initialState: GameState): Int =
@@ -217,7 +226,7 @@ fun parseInput(input: List<String>, part: Int): GameState =
 
 fun main() {
     fun part1(input: List<String>, part: Int = 1): Int =
-        findLowestEnergySolution(parseInput(input, part).also { println(it) })
+        findLowestEnergySolution(parseInput(input, part))
 
     fun part2(input: List<String>): Int =
         part1(
