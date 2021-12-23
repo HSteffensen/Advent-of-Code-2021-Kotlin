@@ -102,12 +102,10 @@ data class GameState(val bugs: Map<Position, AmphipodColor>, val totalCost: Int,
     val isSolved: Boolean
         get() = bugs.all { (position, color) -> bugIsAtDestination(position, color) }
 
-    private fun roomOccupants(roomType: LocationType): List<AmphipodColor> =
-        bugs.filter { (position, _) -> position.locationType == roomType }
-            .map { it.value }
-
     private fun roomHasNoIntruders(roomType: LocationType): Boolean =
-        roomOccupants(roomType).all { it.destination == roomType }
+        bugs.none { (position, color) ->
+            position.locationType == roomType && color.destination != roomType
+        }
 
     private fun bugIsAtDestination(position: Position, bugType: AmphipodColor): Boolean =
         position.locationType == bugType.destination
@@ -129,6 +127,23 @@ data class GameState(val bugs: Map<Position, AmphipodColor>, val totalCost: Int,
                         )
                 )
 
+    private fun reachablePositionsHelper(
+        currentPosition: Position,
+        visited: MutableSet<Position> = mutableSetOf(),
+        resultList: MutableList<Position> = mutableListOf()
+    ): MutableList<Position> =
+        resultList.apply {
+            if (!bugs.containsKey(currentPosition)) {
+                add(currentPosition)
+                currentPosition.neighbors.filter { !visited.contains(it) }.forEach {
+                    reachablePositionsHelper(it, visited.apply { add(currentPosition) }, resultList)
+                }
+            }
+        }
+
+    private fun reachablePositions(bugPosition: Position): List<Position> =
+        bugPosition.neighbors.flatMap { reachablePositionsHelper(it) }
+
     private fun nextStates(bugPosition: Position, bugType: AmphipodColor): List<GameState> =
         reachablePositions(bugPosition)
             .filter { bugCanMoveTo(it, bugPosition, bugType) }
@@ -148,17 +163,6 @@ data class GameState(val bugs: Map<Position, AmphipodColor>, val totalCost: Int,
                     part
                 )
             }
-
-    private fun reachablePositionsHelper(currentPosition: Position, visited: Set<Position> = setOf()): List<Position> =
-        if (bugs.containsKey(currentPosition))
-            listOf()
-        else
-            listOf(currentPosition) + currentPosition.neighbors.filter { !visited.contains(it) }.flatMap {
-                reachablePositionsHelper(it, visited + currentPosition)
-            }
-
-    private fun reachablePositions(bugPosition: Position): List<Position> =
-        bugPosition.neighbors.flatMap { reachablePositionsHelper(it) }
 
     fun nextStates(): List<GameState> =
         bugs.flatMap { nextStates(it.key, it.value) }
@@ -228,7 +232,7 @@ fun main() {
 //        println(testState.nextStates().flatMap { it.nextStates() }.joinToString("\n\n"))
 //    }
     testAnswer(part1(testInput), 12521).also { println("Test part 1 passed") }
-//    testAnswer(part2(testInput), 44169).also { println("Test part 2 passed") }
+    testAnswer(part2(testInput), 44169).also { println("Test part 2 passed") }
 
     val input = readInput("day23/input")
     val wrongPart1Answers = listOf<Int>(
